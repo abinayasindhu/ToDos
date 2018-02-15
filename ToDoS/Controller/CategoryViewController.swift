@@ -108,7 +108,7 @@ class CategoryViewController: SwipeTableViewController {
 
             do {
                 try self.realm.write {
-                    self.realm.delete(self.categoryArray![indexPath.row])
+                    self.realm.delete(categoryForDeletion)
                 }
             } catch {
                 print("Error deleting: \(error)")
