@@ -8,17 +8,22 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
 
     let realm = try! Realm()
+    
+    var background = ""
     
     var categoryArray : Results<Category>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         loadCategories ()
+       
+        tableView.separatorStyle = .none
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor: FlatWhite()]
     }
 
     //MARK: - Tableview Datasource Methods
@@ -30,8 +35,12 @@ class CategoryViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        
         cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No Category is added"
+        
+        background = UIColor.randomFlat.hexValue()
+        cell.backgroundColor = HexColor(categoryArray?[indexPath.row].backgroundColour ?? "2AAEE5")
         
         return cell
     }
@@ -48,7 +57,8 @@ class CategoryViewController: UITableViewController {
             
             let newCategory = Category()
             newCategory.name = textField.text!
-            
+            newCategory.backgroundColour = self.background
+                
             self.save(category: newCategory)
             
         }
@@ -86,6 +96,22 @@ class CategoryViewController: UITableViewController {
         tableView.reloadData()
     }
     
+    //MARK: - Delete using swipe
+    
+    override func updateModel(at indexPath: IndexPath) {
+        
+        if let categoryForDeletion = self.categoryArray?[indexPath.row] {
+
+            do {
+                try self.realm.write {
+                    self.realm.delete(self.categoryArray![indexPath.row])
+                }
+            } catch {
+                print("Error deleting: \(error)")
+            }
+
+        }
+    }
     
     //MARK: - Tableview Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -102,3 +128,4 @@ class CategoryViewController: UITableViewController {
     }
     
 }
+
